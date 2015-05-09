@@ -42,6 +42,8 @@ Uint8 dspMsgQName[DSP_MAX_STRLEN];
 /* Number of iterations message transfers to be done by the application. */
 extern Uint16 numTransfers;
 
+Uint16 A_ARRAY[SIZE][SIZE], B_ARRAY[SIZE][SIZE];
+
 
 /** ============================================================================
  *  @func   TSKMESSAGE_create
@@ -140,7 +142,6 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
     Int status = SYS_OK;
     ControlMsg* msg;
     Uint8 i,j,k,l,count;
-    Uint16 A_ARRAY[SIZE][SIZE], B_ARRAY[SIZE][SIZE];
 
     /* Allocate and send the message */
     status = MSGQ_alloc(SAMPLE_POOL_ID, (MSGQ_Msg*) &msg, APP_BUFFER_SIZE);
@@ -201,14 +202,39 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
                 {
     		/* Include your control flag or processing code here */
                     msg->command = 0x02;
+                    if(count == 0) 
+                    {
+                        for (j = 0; j < SIZE; j++)
+                            {
+                                for (k = 0; k < SIZE; k++)
+                                {   
+                                        //msg->mat[j][k] += 1;
+                                        A_ARRAY[j][k]  =  msg->mat[j][k];
+                                }
+                            }
+                    }
+
+                    if(count == 1) 
+                    {
+                        for (j = 0; j < SIZE; j++)
+                            {
+                                for (k = 0; k < SIZE; k++)
+                                {   
+                                      //  msg->mat[j][k] += 2;
+                                      B_ARRAY[j][k]  =  msg->mat[j][k];
+                                }
+                            }
+                    }
+
                     for (j = 0; j < SIZE; j++)
                             {
                                 for (k = 0; k < SIZE; k++)
                                 {   
-                                    msg->mat[j][k] += 1; 
+                                      msg->mat[j][k] = 0;
+                                      for(l = 0; l < SIZE; l++)
+                                            msg->mat[j][k] = msg->mat[j][k] + A_ARRAY[j][l]*B_ARRAY[l][k];
                                 }
                             }
-
 /*                    
                     if(count == 0) 
                     {

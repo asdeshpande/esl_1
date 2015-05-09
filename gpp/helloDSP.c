@@ -46,7 +46,7 @@ extern "C"
 #define NUMMSGINPOOL1   2
 #define NUMMSGINPOOL2   2
 #define NUMMSGINPOOL3   4
-#define SIZE            17
+#define SIZE            128
     /* Control message data structure. */
     /* Must contain a reserved space for the header */
     typedef struct ControlMsg
