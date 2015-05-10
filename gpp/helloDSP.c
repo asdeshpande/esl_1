@@ -46,7 +46,9 @@ extern "C"
 #define NUMMSGINPOOL1   2
 #define NUMMSGINPOOL2   2
 #define NUMMSGINPOOL3   4
-#define SIZE            128
+
+extern Uint8 SIZE;
+
     /* Control message data structure. */
     /* Must contain a reserved space for the header */
     typedef struct ControlMsg
@@ -54,7 +56,9 @@ extern "C"
         MSGQ_MsgHeader header;
         Uint16 command;
         Char8 arg1[ARG_SIZE];
-	    Uint16 mat[SIZE][SIZE];
+	    Uint16 mat[128][128];
+        Uint8 row;
+        Uint8 col;
     } ControlMsg;
 
     /* Messaging buffer used by the application.
@@ -263,8 +267,22 @@ extern "C"
         Uint16 msgId = 0;
         Uint8 i,j,k, count;
         ControlMsg *msg;
+        Uint16 A[SIZE][SIZE], B[SIZE][SIZE];
+        Uint8 step_select;
+        step_select = SIZE % 2;
 
         SYSTEM_0Print("Entered helloDSP_Execute ()\n");
+
+        //Create Matrix
+        for (j = 0; j < SIZE; j++)
+                    {
+                        for (k = 0; k < SIZE; k++)
+                        {
+                            A[j][k] = 1;
+                            B[j][k] = 2;
+                        }
+                    }
+
 
 #if defined (PROFILE)
         SYSTEM_GetStartTime();
@@ -300,13 +318,30 @@ extern "C"
                 }
                 else
                 {
-                    for (j = 0; j < SIZE; j++)
-                    {
-                        for (k = 0; k < SIZE; k++)
+                    if(count == 0)
+                    {   msg->row = SIZE/2;
+                        msg->col = SIZE;
+                        for (j = 0; j < SIZE/2; j++)
                         {
-                            msg->mat[j][k] = count + 1;
+                            for (k = 0; k < SIZE; k++)
+                            {
+                                msg->mat[j+SIZE/2 + step_select][k] = A[j+ SIZE/2 + step_select][k];
+                            }
                         }
                     }
+
+                    if(count == 1)
+                    {   msg->row = SIZE;
+                        msg->col = SIZE;
+                        for (j = 0; j < SIZE; j++)
+                        {
+                            for (k = 0; k < SIZE; k++)
+                            {
+                                msg->mat[j][k] = B[j][k];
+                            }
+                        }
+                    }                
+                    
                     /* Send the same message received in earlier MSGQ_get () call. */
                     if (DSP_SUCCEEDED(status))
                     {
@@ -352,16 +387,21 @@ extern "C"
                     }
         #endif
 
-                    if (msg->command == 0x02){
+                    if (msg->command == 0x02)
+                    {
                         SYSTEM_1Print("Message received: %s\n", (Uint32) msg->arg1);
-                        for (j = 0; j < SIZE; j++)
+                        if(count == 1)
                         {
-                            for (k = 0; k < SIZE; k++)
+                            for (j = 0; j < SIZE/2; j++)
                             {
-                                printf("%d ", msg->mat[j][k]);
+                                for (k = 0; k < SIZE; k++)
+                                {
+                                    printf("%d ", msg->mat[j+SIZE/2+step_select][k]);
+                                }
+                                printf("\n");
                             }
-                            printf("\n");
-                        }
+                        } 
+                        //printf("SIZE %d\n", SIZE);
                     }
 
                 }

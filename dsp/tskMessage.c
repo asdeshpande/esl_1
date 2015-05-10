@@ -141,7 +141,8 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
 {
     Int status = SYS_OK;
     ControlMsg* msg;
-    Uint8 i,j,k,l,count;
+    Uint8 i,j,k,l,count, row1, col1, col2;
+    Uint8 step_select;
 
     /* Allocate and send the message */
     status = MSGQ_alloc(SAMPLE_POOL_ID, (MSGQ_Msg*) &msg, APP_BUFFER_SIZE);
@@ -203,22 +204,25 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
     		/* Include your control flag or processing code here */
                     msg->command = 0x02;
                     if(count == 0) 
-                    {
-                        for (j = 0; j < SIZE; j++)
+                    {   row1 = msg->row;
+                        col1 = msg->col;
+                        step_select = col1 % 2;
+                        for (j = 0; j < row1; j++)
                             {
-                                for (k = 0; k < SIZE; k++)
+                                for (k = 0; k < col1; k++)
                                 {   
                                         //msg->mat[j][k] += 1;
-                                        A_ARRAY[j][k]  =  msg->mat[j][k];
+                                        A_ARRAY[j][k]  =  msg->mat[j+ row1 + step_select][k];
                                 }
                             }
                     }
 
                     if(count == 1) 
-                    {
-                        for (j = 0; j < SIZE; j++)
+                    {   
+                        col2 = msg->col;
+                        for (j = 0; j < msg->row; j++)
                             {
-                                for (k = 0; k < SIZE; k++)
+                                for (k = 0; k < msg->col; k++)
                                 {   
                                       //  msg->mat[j][k] += 2;
                                       B_ARRAY[j][k]  =  msg->mat[j][k];
@@ -226,47 +230,15 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
                             }
                     }
 
-                    for (j = 0; j < SIZE; j++)
+                    for (j = 0; j < row1; j++)
                             {
-                                for (k = 0; k < SIZE; k++)
+                                for (k = 0; k < col2; k++)
                                 {   
-                                      msg->mat[j][k] = 0;
-                                      for(l = 0; l < SIZE; l++)
-                                            msg->mat[j][k] = msg->mat[j][k] + A_ARRAY[j][l]*B_ARRAY[l][k];
+                                      msg->mat[j+row1+step_select][k] = 0;
+                                      for(l = 0; l < col1; l++)
+                                            msg->mat[j+row1+step_select][k] = msg->mat[j+row1+step_select][k] + A_ARRAY[j][l]*B_ARRAY[l][k];
                                 }
                             }
-/*                    
-                    if(count == 0) 
-                    {
-                        for (j = 0; j < SIZE; j++)
-                            {
-                                for (k = 0; k < SIZE; k++)
-                                {   
-                                    A_ARRAY[j][k] = msg->mat[j][k]; 
-                                }
-                            }
-                    }
-
-                    if(count == 1) 
-                    {
-                        for (j = 0; j < SIZE; j++)
-                            {
-                                for (k = 0; k < SIZE; k++)
-                                {   
-                                    B_ARRAY[j][k] = msg->mat[j][k];
-                                }
-                            }
-
-                        for (j = 0; j < SIZE; j++)
-                                for (k = 0; k < SIZE; k++) 
-                                {
-                                    msg->mat[j][k] = 0;
-                                    for(l = 0; l < SIZE; l++)
-                                        msg->mat[j][k] = msg->mat[j][k] + A_ARRAY[j][l]*B_ARRAY[l][k]; 
-                                }
-                    }            
-*/                                
-                    
 
                     SYS_sprintf(msg->arg1, "While Iteration %d is complete.", count);
 

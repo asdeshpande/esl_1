@@ -11,6 +11,7 @@
 #include <system_os.h>
 #include <helloDSP.h>
 
+Uint8 SIZE; 
 
 #if defined (__cplusplus)
 extern "C"
@@ -36,7 +37,7 @@ extern "C"
         /*	long long _Fract value = atof("2.3");
         	printf("%k\n",value);	*/
 
-        if ((argc != 4) && (argc!=3))
+        if ((argc != 4) && (argc != 3))
         {
             SYSTEM_1Print("Usage : %s <absolute path of DSP executable> <number of transfers> <DSP Processor Id>\n"
                           "For infinite transfers, use value of 0 for <number of transfers>\n"
@@ -51,8 +52,9 @@ extern "C"
         {
             dspExecutable = argv[1];
             strNumIterations = argv[2];
+            SIZE = 32;
 
-            if (argc == 3)
+            if (argc == 4)
             {
                 strProcessorId = "0";
                 processorId = 0;
